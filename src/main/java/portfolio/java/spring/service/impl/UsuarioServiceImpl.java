@@ -1,10 +1,13 @@
 package portfolio.java.spring.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
-import portfolio.java.spring.model.Endereco;
-import portfolio.java.spring.model.Usuario;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import portfolio.java.spring.entity.Endereco;
+import portfolio.java.spring.entity.Usuario;
+import portfolio.java.spring.entity.dto.UsuarioDto;
 import portfolio.java.spring.repository.EnderecoRepository;
 import portfolio.java.spring.repository.UsuarioRepository;
 import portfolio.java.spring.service.UsuarioService;
@@ -14,16 +17,23 @@ import java.util.Optional;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
+
     @Autowired
     private UsuarioRepository usuarioRepository;
+
     @Autowired
     private EnderecoRepository enderecoRepository;
+
     @Autowired
     private ViaCepService viaCepService;
 
     @Override
-    public Iterable<Usuario> buscarTodos() {
-        return usuarioRepository.findAll();
+    public Iterable<Usuario> buscarTodos(String nome) {
+        if (nome == null){
+            return usuarioRepository.findAll();
+        } else {
+            return usuarioRepository.findByNomeContainingIgnoreCase(nome);
+        }
     }
 
     @Override
@@ -33,24 +43,31 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void inserir(Usuario usuario) {
+    public void inserir(UsuarioDto usuarioDto) {
+        Usuario usuario = new Usuario();
+        usuario.setNome(usuarioDto.getNome());
+        usuario.setCpf(usuarioDto.getCpf());
+
+        Endereco endereco = new Endereco();
+        endereco.setCep(usuarioDto.getCep());
+        usuario.setEndereco(endereco);
+
         salvarUsuarioComCep(usuario);
     }
 
     @Override
-    public void atualizar(Integer id, Usuario usuario) {
+    public void atualizar(Integer id, @RequestBody Usuario usuario) {
         Optional<Usuario> usuarioBd = usuarioRepository.findById(id);
-        if (usuarioBd.isPresent()){
+        if (usuarioBd.isPresent()) {
             salvarUsuarioComCep(usuario);
         }
     }
 
     private void salvarUsuarioComCep(Usuario usuario) {
         String cep = usuario.getEndereco().getCep();
-        Endereco endereco = enderecoRepository.findById(Integer.valueOf(cep)).orElseGet(() -> {
+        Endereco endereco = enderecoRepository.findById(cep).orElseGet(() -> {
             Endereco novoEndereco = viaCepService.consultarCep(cep);
-            enderecoRepository.save(novoEndereco);
-            return novoEndereco;
+            return enderecoRepository.save(novoEndereco);
         });
         usuario.setEndereco(endereco);
         usuarioRepository.save(usuario);

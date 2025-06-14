@@ -1,13 +1,15 @@
 package portfolio.java.spring.service;
 
-import portfolio.java.spring.model.Usuario;
+import org.springframework.data.repository.query.Param;
+import portfolio.java.spring.entity.Usuario;
+import portfolio.java.spring.entity.dto.UsuarioDto;
 
 public interface UsuarioService {
-    Iterable<Usuario> buscarTodos();
+    Iterable<Usuario> buscarTodos(String nome);
 
     Usuario buscarPorId(Integer id);
 
-    void inserir(Usuario usuario);
+    void inserir(UsuarioDto usuarioDto);
 
     void atualizar(Integer id, Usuario usuario);
 
