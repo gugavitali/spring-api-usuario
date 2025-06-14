@@ -1,10 +1,8 @@
-# spring-gestao-sistemas-chamado
+# spring-api-usuario
 
 Tecnologia usada:
 Spring (
-Spring data jpa
-Spring security
-Spring cloud openfeign
-)
+- Spring data jpa
+- Spring cloud openfeign
 Banco usado:
-Postgres
+- Postgres
